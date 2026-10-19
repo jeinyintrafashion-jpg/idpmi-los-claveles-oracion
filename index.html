@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b99a3d">
+  <meta name="description" content="Comparte tu petición de oración con IDPMI Los Claveles.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="logo.png">
+  <title>IDPMI Los Claveles Oración</title>
+  <style>
+    :root{--gold:#b99a3d;--ink:#201d18;--cream:#faf8f1;--muted:#6c6659}
+    *{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    header{background:#fff;border-bottom:3px solid var(--gold);padding:20px 16px;text-align:center}
+    header img{width:118px;height:118px;object-fit:contain;border-radius:50%}
+    h1{font-size:1.35rem;margin:8px 0 0} main{max-width:620px;margin:22px auto;padding:0 16px 32px}
+    .verse,.form-card{background:#fff;border:1px solid #e7dfca;border-radius:18px;padding:20px;box-shadow:0 4px 16px #30250b0b}
+    .verse{text-align:center;margin-bottom:16px}.verse h2{font-size:1.05rem;margin:0 0 10px;color:#67521b}
+    blockquote{margin:0;font-size:1.12rem;font-style:italic} .reference{font-weight:700;color:#67521b;margin:10px 0 0}
+    label{display:block;font-weight:650;margin:14px 0 6px} input,textarea{width:100%;padding:12px 13px;border:1px solid #cfc7b5;border-radius:10px;font:inherit;background:#fff}
+    textarea{min-height:110px;resize:vertical} .hint{font-size:.86rem;color:var(--muted)}
+    .consent{display:flex;gap:10px;align-items:flex-start;margin:16px 0;font-size:.9rem}.consent input{width:auto;margin-top:5px}
+    button{width:100%;border:0;border-radius:11px;padding:14px;background:var(--gold);color:#17140d;font-size:1rem;font-weight:750;cursor:pointer}
+    button:disabled{opacity:.6;cursor:wait} #message{display:none;padding:12px;border-radius:10px;margin-top:14px} .ok{background:#e5f5e8;color:#205b2b}.error{background:#fff0e8;color:#8b3217}
+    footer{text-align:center;color:var(--muted);font-size:.82rem;padding:0 20px 24px}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo de Iglesia de Dios Pentecostal M.I. Los Claveles">
+    <h1>IDPMI Los Claveles Oración</h1>
+  </header>
+  <main>
+    <section class="verse" aria-labelledby="verse-title">
+      <h2 id="verse-title">Una palabra de esperanza para ti</h2>
+      <blockquote>«Venid a mí todos los que estáis trabajados y cargados, y yo os haré descansar».</blockquote>
+      <p class="reference">Mateo 11:28</p>
+      <p class="hint">Queremos orar por ti. Comparte tu petición con nuestro equipo.</p>
+    </section>
+    <section class="form-card">
+      <form id="prayer-form">
+        <label for="name">Nombre completo</label>
+        <input id="name" name="name" autocomplete="name" required maxlength="120" placeholder="Escribe tu nombre">
+        <label for="phone">Teléfono</label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel" required maxlength="40" placeholder="Número de contacto">
+        <label for="address">Dirección o barrio</label>
+        <input id="address" name="address" autocomplete="street-address" required maxlength="240" placeholder="Escribe tu dirección o barrio">
+        <label for="request">¿Por qué deseas que oremos?</label>
+        <textarea id="request" name="request" required maxlength="3000" placeholder="Cuéntanos tu petición de oración..."></textarea>
+        <label class="consent"><input id="consent" type="checkbox" required>
+          <span>Autorizo a IDPMI Los Claveles a usar estos datos para atender mi petición de oración y entiendo que serán consultados solo por personas autorizadas.</span>
+        </label>
+        <button id="send" type="submit">Enviar petición de oración</button>
+        <div id="message" role="status" aria-live="polite"></div>
+        <p class="hint">Tus datos deben tratarse de forma confidencial. Si no deseas compartir tu dirección, consulta al equipo de evangelización para una alternativa.</p>
+      </form>
+    </section>
+  </main>
+  <footer>Con amor y en oración · IDPMI Los Claveles</footer>
+  <script>
+    // Antes de publicar, configura el endpoint seguro descrito en README.txt.
+    // Sin endpoint, el formulario no envía ni guarda datos.
+    const ENDPOINT = "";
+    const form = document.getElementById("prayer-form");
+    const msg = document.getElementById("message");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      if (!ENDPOINT) {
+        msg.className = "error";
+        msg.textContent = "El formulario está diseñado, pero aún falta conectar la base de datos. No se ha enviado ni guardado tu petición.";
+        msg.style.display = "block";
+        return;
+      }
+      const button = document.getElementById("send");
+      button.disabled = true;
+      msg.style.display = "none";
+      const payload = {
+        name: form.name.value.trim(),
+        phone: form.phone.value.trim(),
+        address: form.address.value.trim(),
+        request: form.request.value.trim(),
+        consent: document.getElementById("consent").checked
+      };
+      try {
+        const response = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: {"Content-Type":"text/plain;charset=utf-8"},
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo enviar.");
+        form.reset();
+        msg.className = "ok";
+        msg.textContent = "Tu petición fue enviada. Gracias por compartirla; estaremos orando por ti.";
+      } catch (error) {
+        msg.className = "error";
+        msg.textContent = "No se pudo confirmar el envío. Inténtalo de nuevo más tarde o comunícate con el equipo de la iglesia.";
+      } finally {
+        msg.style.display = "block";
+        button.disabled = false;
+      }
+    });
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+    }
+  </script>
+</body>
+</html>

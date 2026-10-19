@@ -1,0 +1,18 @@
+{
+  "name": "IDPMI Los Claveles Oración",
+  "short_name": "Los Claveles",
+  "description": "Formulario de peticiones de oración de IDPMI Los Claveles",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf8f1",
+  "theme_color": "#b99a3d",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
